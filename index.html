@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Uddesh's Barcode Studio | Excel to Barcode PDF</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <meta name="theme-color" content="#ffffff">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- Header Bar -->
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+          <path d="M3 5v14M6 5v14M9 5v8M12 5v14M15 5v8M18 5v14M21 5v14"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <span class="brand-title">Uddesh's Barcode Studio</span>
+        <span class="brand-tag">Excel to PDF Utility</span>
+      </div>
+    </div>
+
+    <div class="topbar-actions">
+      <button id="btnInstallApp" class="btn btn-outline btn-sm" style="display: none;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/>
+        </svg>
+        Install App
+      </button>
+
+      <button id="btnLoadSample" class="btn btn-outline btn-sm" title="Test with sample warehouse locator dataset">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/>
+          <line x1="16" y1="17" x2="8" y2="17"/>
+        </svg>
+        Sample Data
+      </button>
+
+      <button id="btnPrintDirect" class="btn btn-outline btn-sm" title="Print current page directly">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="6 9 6 2 18 2 18 9"/>
+          <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+          <rect x="6" y="14" width="12" height="8"/>
+        </svg>
+        Print
+      </button>
+
+      <button id="btnGeneratePdf" class="btn btn-solid btn-sm">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        Export Single PDF
+      </button>
+    </div>
+  </header>
+
+  <!-- Mobile Tab Switcher -->
+  <div class="mobile-tabs" id="mobileTabs">
+    <button class="mobile-tab-btn active" data-tab="config">Settings</button>
+    <button class="mobile-tab-btn" data-tab="preview">Preview</button>
+  </div>
+
+  <!-- Main Grid Workspace -->
+  <main class="app-layout">
+    <!-- Configuration Panel -->
+    <aside class="sidebar" id="configSidebar">
+      <!-- 1. File Upload -->
+      <section class="config-card">
+        <div class="config-card-header">
+          <span class="step-badge">1</span>
+          <div>
+            <h2 class="config-card-title">Data Source</h2>
+            <p class="config-card-subtitle">Upload your Excel or CSV file</p>
+          </div>
+        </div>
+
+        <div class="dropzone" id="dropzone">
+          <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" hidden>
+          <div class="dropzone-content">
+            <svg class="dropzone-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            <p class="dropzone-text">Drop spreadsheet here, or <span class="text-link">browse</span></p>
+            <span class="dropzone-meta">.xlsx, .xls, .csv</span>
+          </div>
+        </div>
+
+        <div class="file-summary" id="fileMeta" style="display: none;">
+          <div class="file-summary-header">
+            <span class="file-name" id="fileNameLabel">sample.xlsx</span>
+            <span class="pill pill-green" id="rowCountBadge">0 rows</span>
+          </div>
+          <div class="form-item mt-3" id="sheetSelectGroup" style="display: none;">
+            <label class="form-label" for="sheetSelect">Worksheet</label>
+            <select id="sheetSelect" class="form-control"></select>
+          </div>
+        </div>
+      </section>
+
+      <!-- 2. Column Mapping -->
+      <section class="config-card">
+        <div class="config-card-header">
+          <span class="step-badge">2</span>
+          <div>
+            <h2 class="config-card-title">Field Placement</h2>
+            <p class="config-card-subtitle">Map columns to label positions</p>
+          </div>
+        </div>
+
+        <div class="form-stack">
+          <div class="form-item">
+            <label class="form-label" for="topFieldSelect">Top Header Text</label>
+            <select id="topFieldSelect" class="form-control">
+              <option value="__none__">None</option>
+              <option value="__custom__">Custom Text</option>
+            </select>
+            <input type="text" id="topCustomInput" class="form-control mt-2" placeholder="Type custom text..." style="display: none;">
+          </div>
+
+          <div class="form-item">
+            <label class="form-label label-required" for="barcodeFieldSelect">Barcode Value (Encoded)</label>
+            <select id="barcodeFieldSelect" class="form-control"></select>
+          </div>
+
+          <div class="form-item">
+            <label class="form-label" for="bottomFieldSelect">Bottom Label Text</label>
+            <select id="bottomFieldSelect" class="form-control">
+              <option value="__same__">Same as Barcode Value</option>
+              <option value="__none__">None</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. Templates & Page Grid -->
+      <section class="config-card">
+        <div class="config-card-header">
+          <span class="step-badge">3</span>
+          <div>
+            <h2 class="config-card-title">Template & Grid</h2>
+            <p class="config-card-subtitle">Select label preset or customize layout</p>
+          </div>
+        </div>
+
+        <div class="form-item">
+          <label class="form-label" for="templatePresetSelect">Layout Preset</label>
+          <select id="templatePresetSelect" class="form-control">
+            <option value="shahia_10">Warehouse Standard (2x5 Grid, 10 per A4)</option>
+            <option value="compact_21">Compact Shelf Tags (3x7 Grid, 21 per A4)</option>
+            <option value="pallet_6">Pallet & Bin Cards (2x3 Grid, 6 per A4)</option>
+            <option value="avery_5160">Avery 5160 Sheet (3x10 Grid, 30 per Letter)</option>
+            <option value="avery_5163">Avery 5163 Sheet (2x5 Grid, 10 per Letter)</option>
+            <option value="thermal_4x6">Single 4x6 inch Thermal Roll</option>
+            <option value="thermal_3x2">Single 3x2 inch Shelf Sticker</option>
+            <option value="custom">Custom Grid and Dimensions</option>
+          </select>
+        </div>
+
+        <div id="customLayoutControls" class="custom-layout-panel" style="display: none;">
+          <div class="form-split">
+            <div class="form-item">
+              <label class="form-label" for="paperSizeSelect">Paper Format</label>
+              <select id="paperSizeSelect" class="form-control">
+                <option value="a4">A4 (210 x 297 mm)</option>
+                <option value="letter">Letter (8.5 x 11 in)</option>
+                <option value="legal">Legal (8.5 x 14 in)</option>
+              </select>
+            </div>
+            <div class="form-item">
+              <label class="form-label" for="orientationSelect">Orientation</label>
+              <select id="orientationSelect" class="form-control">
+                <option value="p">Portrait</option>
+                <option value="l">Landscape</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-split">
+            <div class="form-item">
+              <label class="form-label" for="gridColsInput">Columns</label>
+              <input type="number" id="gridColsInput" class="form-control" min="1" max="6" value="2">
+            </div>
+            <div class="form-item">
+              <label class="form-label" for="gridRowsInput">Rows</label>
+              <input type="number" id="gridRowsInput" class="form-control" min="1" max="15" value="5">
+            </div>
+          </div>
+
+          <div class="form-split">
+            <div class="form-item">
+              <label class="form-label" for="marginXInput">Side Margin (mm)</label>
+              <input type="number" id="marginXInput" class="form-control" min="0" max="50" step="0.5" value="8.8">
+            </div>
+            <div class="form-item">
+              <label class="form-label" for="marginYInput">Top Margin (mm)</label>
+              <input type="number" id="marginYInput" class="form-control" min="0" max="50" step="0.5" value="12.3">
+            </div>
+          </div>
+
+          <div class="form-split">
+            <div class="form-item">
+              <label class="form-label" for="gapXInput">Col Gap (mm)</label>
+              <input type="number" id="gapXInput" class="form-control" min="0" max="30" step="0.5" value="8.8">
+            </div>
+            <div class="form-item">
+              <label class="form-label" for="gapYInput">Row Gap (mm)</label>
+              <input type="number" id="gapYInput" class="form-control" min="0" max="30" step="0.5" value="5.3">
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. Barcode Format & Typography -->
+      <section class="config-card">
+        <div class="config-card-header">
+          <span class="step-badge">4</span>
+          <div>
+            <h2 class="config-card-title">Barcode & Typography</h2>
+            <p class="config-card-subtitle">Symbology, heights and text sizes</p>
+          </div>
+        </div>
+
+        <div class="form-item">
+          <label class="form-label" for="barcodeTypeSelect">Barcode Symbology</label>
+          <select id="barcodeTypeSelect" class="form-control">
+            <optgroup label="1D Linear Barcodes">
+              <option value="code128" selected>Code 128 (Industrial / Warehouse standard)</option>
+              <option value="code39">Code 39</option>
+              <option value="ean13">EAN-13</option>
+              <option value="upca">UPC-A</option>
+              <option value="itf14">ITF-14</option>
+            </optgroup>
+            <optgroup label="2D Matrix Barcodes">
+              <option value="qrcode">QR Code (2D)</option>
+              <option value="datamatrix">Data Matrix (2D)</option>
+              <option value="pdf417">PDF417 (2D)</option>
+            </optgroup>
+          </select>
+        </div>
+
+        <div class="form-split">
+          <div class="form-item">
+            <label class="form-label" for="borderStyleSelect">Card Border</label>
+            <select id="borderStyleSelect" class="form-control">
+              <option value="rounded" selected>Rounded Card</option>
+              <option value="square">Square Outline</option>
+              <option value="dashed">Cut Guides</option>
+              <option value="none">No Border</option>
+            </select>
+          </div>
+          <div class="form-item">
+            <label class="form-label" for="barHeightSlider">
+              Barcode Height: <span id="barHeightVal" class="slider-val">55pt</span>
+            </label>
+            <input type="range" id="barHeightSlider" class="form-range" min="20" max="100" value="55">
+          </div>
+        </div>
+
+        <div class="form-split">
+          <div class="form-item">
+            <label class="form-label" for="headerSizeSlider">
+              Top Text: <span id="headerSizeVal" class="slider-val">14pt</span>
+            </label>
+            <input type="range" id="headerSizeSlider" class="form-range" min="8" max="24" value="14">
+          </div>
+          <div class="form-item">
+            <label class="form-label" for="footerSizeSlider">
+              Bottom Text: <span id="footerSizeVal" class="slider-val">16pt</span>
+            </label>
+            <input type="range" id="footerSizeSlider" class="form-range" min="8" max="28" value="16">
+          </div>
+        </div>
+      </section>
+    </aside>
+
+    <!-- Live Preview Stage -->
+    <section class="preview-area" id="previewArea">
+      <!-- Toolbar -->
+      <div class="preview-toolbar">
+        <div class="segmented-control">
+          <button id="btnViewSheet" class="segment-btn active">Sheet View</button>
+          <button id="btnViewCard" class="segment-btn">Card View</button>
+        </div>
+
+        <div class="pager">
+          <button id="btnPrevPage" class="pager-btn" title="Previous Page">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="15 18 9 12 15 6"/>
+            </svg>
+          </button>
+          <div class="pager-text">
+            Page <input type="number" id="pageNumberInput" value="1" min="1"> of <span id="totalPagesLabel">1</span>
+          </div>
+          <button id="btnNextPage" class="pager-btn" title="Next Page">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="9 18 15 12 9 6"/>
+            </svg>
+          </button>
+        </div>
+
+        <div class="zoom-group">
+          <button id="btnZoomOut" class="pager-btn" title="Zoom Out">−</button>
+          <span class="zoom-text" id="zoomVal">100%</span>
+          <button id="btnZoomIn" class="pager-btn" title="Zoom In">+</button>
+          <button id="btnZoomFit" class="btn btn-outline btn-xs">Fit</button>
+        </div>
+      </div>
+
+      <!-- Viewport -->
+      <div class="viewport-wrapper" id="viewportWrapper">
+        <div class="paper-sheet" id="paperSheet">
+          <!-- Dynamically populated -->
+        </div>
+
+        <div class="single-card-viewport" id="singleCardViewport" style="display: none;">
+          <div class="single-card-wrapper" id="singleCardWrapper"></div>
+        </div>
+      </div>
+
+      <!-- Footer Bar -->
+      <div class="preview-footer">
+        <div class="stats-text" id="statsSummary">
+          Ready. 10 labels per page.
+        </div>
+        <div class="footer-actions">
+          <button id="btnDownloadCurrentPage" class="btn btn-outline btn-xs">Download Current Page</button>
+          <button id="btnQuickExport" class="btn btn-solid btn-xs">Download Full PDF</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Export Progress Modal -->
+  <div class="modal-overlay" id="progressModal" style="display: none;">
+    <div class="modal-box">
+      <div class="modal-head">
+        <svg class="modal-spinner" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <circle cx="12" cy="12" r="10" stroke-opacity="0.2"/>
+          <path d="M12 2a10 10 0 0 1 10 10"/>
+        </svg>
+        <div>
+          <h3 class="modal-title">Generating Barcode PDF</h3>
+          <p class="modal-desc" id="progressStatusText">Rendering vector labels...</p>
+        </div>
+      </div>
+
+      <div class="progress-track">
+        <div class="progress-fill" id="progressBarFill" style="width: 0%;"></div>
+      </div>
+
+      <div class="progress-numbers">
+        <span id="progressCountText">0 / 0 pages</span>
+        <span id="progressPercentText">0%</span>
+      </div>
+
+      <div class="modal-foot">
+        <button id="btnCancelExport" class="btn btn-outline btn-sm">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vendor Scripts -->
+  <script src="vendor/xlsx.full.min.js"></script>
+  <script src="vendor/jspdf.umd.min.js"></script>
+  <script src="vendor/bwip-js-min.js"></script>
+  <script src="app.js"></script>
+
+  <!-- Service Worker Registration for PWA -->
+  <script>
+    if ('serviceWorker' in navigator && (window.location.protocol === 'http:' || window.location.protocol === 'https:')) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js').catch(err => {
+          console.log('SW registration note:', err);
+        });
+      });
+    }
+
+    // PWA Install prompt handling
+    let deferredPrompt;
+    const installBtn = document.getElementById('btnInstallApp');
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      if (installBtn) installBtn.style.display = 'inline-flex';
+    });
+
+    if (installBtn) {
+      installBtn.addEventListener('click', async () => {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+          installBtn.style.display = 'none';
+        }
+        deferredPrompt = null;
+      });
+    }
+  </script>
+</body>
+</html>
